@@ -25,7 +25,7 @@
     self.textView.editable = NO;
     [self.view addSubview:self.textView];
 }
-///获取启动加载时执行的所有函数符号
+///获取启动加载时执行的排序后的所有函数符号，得到顺序执行的函数符号后，这些配置和clang插桩代码就可以删除了（除了Order File配置）
 - (void)getOrderFile{
     NSMutableArray <NSString *> * symbolNames = [NSMutableArray array];
     while (YES) {
@@ -71,6 +71,13 @@
     self.textView.text = funcStr;
 }
 
+
+/*
+ 所有处理完之后，最后需要Write Link Map File改为NO，把Other C Flags/Other Swift Flags的配置删除掉。
+ 因为这个配置会在我们代码中自动插入跳转执行 __sanitizer_cov_trace_pc_guard。重排完就不需要了，需要去除掉。
+ 同时把ViewController中的 __sanitizer_cov_trace_pc_guard也要去除掉。
+ */
+/// clang插桩代码
 void __sanitizer_cov_trace_pc_guard_init(uint32_t *start,
                                          uint32_t *stop) {
     static uint64_t N;  // Counter for the guards.
